@@ -9,28 +9,6 @@ const cn = (...classes) => {
     return classes.filter(Boolean).join(" ");
 };
 
-// Button Component
-const buttonVariants = (variant, size) => {
-    const base = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
-    const variants = {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-    };
-    const sizes = {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-    };
-    return cn(base, variants[variant] || variants.default, sizes[size] || sizes.default);
-};
-
-const Button = React.forwardRef(({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants(variant, size), className)} ref={ref} {...props} />;
-});
-Button.displayName = "Button";
-
 // Card Components
 const Card = React.forwardRef(({ className, ...props }, ref) => (
     <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
@@ -185,7 +163,7 @@ const ServiceCategory = () => {
                                                             <span className="text-sm text-gray-500 font-lato">{treatment.duration}</span>
                                                         </div>
                                                     </div>
-                                                    <Button
+                                                    <button
                                                         size="sm"
                                                         variant="ghost"
                                                         className="text-beauty-rose hover:text-beauty-rose/80 hover:bg-beauty-cream/10"
@@ -195,7 +173,7 @@ const ServiceCategory = () => {
                                                         }}
                                                     >
                                                         View
-                                                    </Button>
+                                                    </button>
                                                 </div>
                                                 <AccordionContent className="text-sm text-gray-600 font-lato pb-4">{treatment.description}</AccordionContent>
                                             </AccordionItem>
@@ -276,13 +254,13 @@ const ServiceCategory = () => {
                                             </div>
                                         </CardContent>
                                     </Card>
-                                    <Button
-                                        className="bg-beauty-rose hover:bg-beauty-rose/80 text-white px-8 py-6 text-lg"
+                                    <button
+                                        className="bg-rose-400 hover:bg-rose-300 text-white px-6 py-3 text-lg"
                                         onClick={handleBookTreatment}
                                         aria-label={`Book ${activeTreatment.name} treatment`}
                                     >
                                         Book This Treatment
-                                    </Button>
+                                    </button>
                                 </div>
                             )}
                         </motion.div>
@@ -304,10 +282,10 @@ const ServiceCategory = () => {
                             </p>
                         </div>
                         <div className="flex justify-center">
-                            <Button className="bg-beauty-rose hover:bg-beauty-rose/80 text-white mr-4">Book Online Now</Button>
-                            <Button variant="outline" className="border-beauty-rose text-beauty-rose hover:bg-beauty-rose/10">
+                            <button className="bg-rose-400 hover:bg-rose-300 py-2 px-4 text-white mr-4">Book Online Now</button>
+                            <button variant="outline" className="border px-2 border-beauty-rose text-beauty-rose hover:bg-beauty-rose/10">
                                 Call Us: (123) 456-7890
-                            </Button>
+                            </button>
                         </div>
                     </motion.div>
                 </div>

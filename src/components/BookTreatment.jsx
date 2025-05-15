@@ -322,7 +322,7 @@ const BookTreatment = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            <main className="pt-8 pb-16">
+            <main className="pt-28 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Hero Section */}
                     <div className="mb-8">
@@ -430,7 +430,7 @@ const BookTreatment = () => {
                             <div className="mt-8 flex justify-end">
                                 <Button
                                     onClick={handleNextStep}
-                                    className="bg-beauty-rose hover:bg-beauty-rose/90"
+                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
                                 >
                                     Next: Select Date & Time
                                 </Button>
@@ -524,13 +524,13 @@ const BookTreatment = () => {
                                 <Button
                                     onClick={handlePreviousStep}
                                     variant="outline"
-                                    className="border-beauty-rose text-beauty-rose hover:bg-beauty-rose/10"
+                                    className="bg-rose-400 hover:bg-rose-300 px-4 text-white"
                                 >
                                     Back
                                 </Button>
                                 <Button
                                     onClick={handleNextStep}
-                                    className="bg-beauty-rose hover:bg-beauty-rose/90"
+                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
                                 >
                                     Next: Payment
                                 </Button>
@@ -714,13 +714,13 @@ const BookTreatment = () => {
                                 <Button
                                     onClick={handlePreviousStep}
                                     variant="outline"
-                                    className="border-beauty-rose text-beauty-rose hover:bg-beauty-rose/10"
+                                    className="border-beauty-rose bg-rose-200 text-black px-4 py-1"
                                 >
                                     Back
                                 </Button>
                                 <Button
                                     onClick={handleNextStep}
-                                    className="bg-beauty-rose hover:bg-beauty-rose/90"
+                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
                                 >
                                     Complete Booking
                                 </Button>
