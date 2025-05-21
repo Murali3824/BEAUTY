@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 const categories = [
   {
@@ -48,7 +48,7 @@ const categories = [
 ];
 
 const ServicesSection = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -144,14 +144,14 @@ const ServicesSection = () => {
                     <p className="text-white/90 font-lato text-sm mb-4">
                       {category.description}
                     </p>
-                    <div className="flex justify-end">
+                    {/* <div className="flex justify-end">
                       <span className="inline-flex items-center text-white text-sm font-medium">
                         Explore Services
                         <svg className="ml-1 w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                         </svg>
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
