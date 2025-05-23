@@ -48,8 +48,31 @@ function LoginSignup() {
 
     const handleSubmit = () => {
         if (!validateForm()) return;
-        console.log(`${mode} submitted:`, { userType, ...formData });
-        navigate('/');
+
+        // Simulate token generation (in a real app, this would come from a backend)
+        const token = `token_${formData.email}_${Date.now()}`;
+        const userData = {
+            token,
+            userType: mode === 'signup' ? userType : localStorage.getItem('userType') || userType,
+            email: formData.email,
+            name: formData.name || localStorage.getItem('name') || '',
+            phone: formData.phone || localStorage.getItem('phone') || '',
+        };
+
+        // Store user data and token in localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('userType', userData.userType);
+        localStorage.setItem('email', userData.email);
+        if (mode === 'signup') {
+            localStorage.setItem('name', userData.name);
+            localStorage.setItem('phone', userData.phone);
+        }
+
+        console.log(`${mode} submitted:`, userData);
+
+        // Redirect to respective dashboard
+        const redirectPath = userData.userType === 'customer' ? '/customer-dashboard' : '/beautician-dashboard';
+        navigate(redirectPath);
         setFormData({ name: '', email: '', phone: '', password: '' });
         setError('');
     };

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import serviceDetails from "../data/serviceDetails"; // Import serviceDetails
+import serviceDetails from "../data/serviceDetails";
 
 // Utility function to combine class names
 const cn = (...classes) => {
@@ -171,18 +171,16 @@ const Calendar = ({ selected, onSelect, disabled }) => {
 
 // Main BookTreatment component
 const BookTreatment = () => {
-    const { category, treatment } = useParams(); // Extract category and treatment from URL
+    const { category, treatment } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    // Fetch category and treatment details
     const categoryDetails = serviceDetails[category];
     const treatmentData = categoryDetails?.treatments.find(t => t.id === treatment);
 
-    // Handle case where category or treatment is not found
     if (!categoryDetails || !treatmentData) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
@@ -210,18 +208,15 @@ const BookTreatment = () => {
         paymentMethod: 'credit'
     });
 
-    // Mock toast function
     const toast = (props) => {
         console.log("Toast:", props);
     };
 
-    // Available time slots
     const timeSlots = [
         '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
         '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
     ];
 
-    // Available specialists
     const specialists = [
         { id: 'sarah', name: 'Sarah Johnson' },
         { id: 'emily', name: 'Emily Parker' },
@@ -229,10 +224,8 @@ const BookTreatment = () => {
         { id: 'olivia', name: 'Olivia Reed' }
     ];
 
-    // Handle form field changes
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-
         if (type === 'checkbox') {
             setFormData(prev => ({ ...prev, [name]: checked }));
         } else {
@@ -240,17 +233,14 @@ const BookTreatment = () => {
         }
     };
 
-    // Handle date selection
     const handleDateSelect = (date) => {
         setFormData(prev => ({ ...prev, date }));
     };
 
-    // Handle payment method selection
     const handlePaymentMethodSelect = (method) => {
         setFormData(prev => ({ ...prev, paymentMethod: method }));
     };
 
-    // Form validation
     const validateCurrentStep = () => {
         switch (currentStep) {
             case 'details':
@@ -263,7 +253,6 @@ const BookTreatment = () => {
                     return false;
                 }
                 return true;
-
             case 'date':
                 if (!formData.date || !formData.time || !formData.specialist) {
                     toast({
@@ -274,7 +263,6 @@ const BookTreatment = () => {
                     return false;
                 }
                 return true;
-
             case 'payment':
                 if (!formData.acceptTerms) {
                     toast({
@@ -285,23 +273,35 @@ const BookTreatment = () => {
                     return false;
                 }
                 return true;
-
             default:
                 return true;
         }
     };
 
-    // Handle next step
     const handleNextStep = () => {
         if (!validateCurrentStep()) return;
 
         if (currentStep === 'details') setCurrentStep('date');
         else if (currentStep === 'date') setCurrentStep('payment');
         else if (currentStep === 'payment') {
-            // In a real application, you would process payment here
-            setCurrentStep('confirmation');
+            // Save booking to localStorage
+            const newBooking = {
+                id: Date.now(), // Unique ID based on timestamp
+                service: treatmentData.name,
+                date: formData.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+                time: formData.time,
+                status: 'upcoming',
+                provider: specialists.find(s => s.id === formData.specialist)?.name || 'Not specified'
+            };
 
-            // Show success toast
+            const storedBookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const updatedBookings = [...storedBookings, newBooking];
+            localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+
+            // Dispatch custom event to notify CustomerDashboard
+            window.dispatchEvent(new CustomEvent('bookingAdded', { detail: newBooking }));
+
+            setCurrentStep('confirmation');
             toast({
                 title: "Booking Confirmed!",
                 description: `Your appointment for ${treatmentData.name} has been scheduled for ${formData.date?.toLocaleDateString()} at ${formData.time}.`,
@@ -309,13 +309,11 @@ const BookTreatment = () => {
         }
     };
 
-    // Handle previous step
     const handlePreviousStep = () => {
         if (currentStep === 'date') setCurrentStep('details');
         else if (currentStep === 'payment') setCurrentStep('date');
     };
 
-    // Return to services page
     const handleReturnToServices = () => {
         navigate('/services');
     };
@@ -324,48 +322,36 @@ const BookTreatment = () => {
         <div className="min-h-screen bg-white">
             <main className="pt-28 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Hero Section */}
                     <div className="mb-8">
                         <h1 className="text-4xl md:text-5xl font-medium text-beauty-charcoal mb-4 text-center">
                             Book Your <span className="text-beauty-rose italic">{treatmentData.name}</span>
                         </h1>
                         <div className="w-24 h-px bg-beauty-gold mx-auto my-6"></div>
                     </div>
-
-                    {/* Booking Progress */}
                     <div className="mb-10">
                         <div className="flex flex-col md:flex-row justify-center items-center">
                             <div className={`flex flex-col items-center ${currentStep === 'details' ? 'opacity-100' : 'opacity-60'}`}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm ${currentStep === 'details' ? 'bg-beauty-rose' : 'bg-beauty-rose/60'}`}>1</div>
                                 <span className="mt-2 text-sm">Your Details</span>
                             </div>
-
                             <div className="w-16 h-px md:w-32 bg-beauty-rose/30 my-4 md:my-0"></div>
-
                             <div className={`flex flex-col items-center ${currentStep === 'date' ? 'opacity-100' : 'opacity-60'}`}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm ${currentStep === 'date' ? 'bg-beauty-rose' : 'bg-beauty-rose/60'}`}>2</div>
                                 <span className="mt-2 text-sm">Date & Time</span>
                             </div>
-
                             <div className="w-16 h-px md:w-32 bg-beauty-rose/30 my-4 md:my-0"></div>
-
                             <div className={`flex flex-col items-center ${currentStep === 'payment' || currentStep === 'confirmation' ? 'opacity-100' : 'opacity-60'}`}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm ${currentStep === 'payment' || currentStep === 'confirmation' ? 'bg-beauty-rose' : 'bg-beauty-rose/60'}`}>3</div>
                                 <span className="mt-2 text-sm">Payment</span>
                             </div>
                         </div>
                     </div>
-
-                    {/* Treatment Summary */}
                     <div className="bg-beauty-cream/10 p-6 rounded-lg mb-10">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                             <div>
-                                <h2 className="text-2xl font-medium text-beauty-charcoal">
-                                    {treatmentData.name}
-                                </h2>
+                                <h2 className="text-2xl font-medium text-beauty-charcoal">{treatmentData.name}</h2>
                                 <p className="text-gray-600">{categoryDetails.title} Treatment</p>
                             </div>
-
                             <div className="mt-4 md:mt-0 flex items-center">
                                 <div className="bg-white px-4 py-2 rounded-lg shadow-sm">
                                     <span className="text-beauty-charcoal font-medium">${treatmentData.price}</span>
@@ -376,118 +362,60 @@ const BookTreatment = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Form Steps */}
                     {currentStep === 'details' && (
                         <div className="bg-white rounded-lg shadow-lg p-8">
-                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">
-                                Your Details
-                            </h2>
-
+                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">Your Details</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label htmlFor="name" className="block text-sm text-gray-600 mb-1">
-                                        Full Name*
-                                    </label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
+                                    <label htmlFor="name" className="block text-sm text-gray-600 mb-1">Full Name*</label>
+                                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
                                 </div>
-
                                 <div>
-                                    <label htmlFor="email" className="block text-sm text-gray-600 mb-1">
-                                        Email Address*
-                                    </label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
+                                    <label htmlFor="email" className="block text-sm text-gray-600 mb-1">Email Address*</label>
+                                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
                                 </div>
-
                                 <div>
-                                    <label htmlFor="phone" className="block text-sm text-gray-600 mb-1">
-                                        Phone Number*
-                                    </label>
-                                    <Input
-                                        id="phone"
-                                        name="phone"
-                                        type="tel"
-                                        value={formData.phone}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
+                                    <label htmlFor="phone" className="block text-sm text-gray-600 mb-1">Phone Number*</label>
+                                    <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required />
                                 </div>
                             </div>
-
                             <div className="mt-8 flex justify-end">
-                                <Button
-                                    onClick={handleNextStep}
-                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
-                                >
-                                    Next: Select Date & Time
-                                </Button>
+                                <Button onClick={handleNextStep} className="bg-rose-400 hover:bg-rose-300 px-3 py-3">Next: Select Date & Time</Button>
                             </div>
                         </div>
                     )}
-
                     {currentStep === 'date' && (
                         <div className="bg-white rounded-lg shadow-lg p-8">
-                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">
-                                Choose Date & Time
-                            </h2>
-
+                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">Choose Date & Time</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                    <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                        Select a Date
-                                    </h3>
+                                    <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Select a Date</h3>
                                     <div className="border rounded-lg p-4">
                                         <Calendar
                                             selected={formData.date}
                                             onSelect={handleDateSelect}
-                                            disabled={(date) => {
-                                                // Disable dates in the past and Sundays (assuming salon is closed)
-                                                return date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                                                    date.getDay() === 0;
-                                            }}
+                                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0)) || date.getDay() === 0}
                                         />
                                     </div>
                                 </div>
-
                                 <div>
                                     <div className="mb-8">
-                                        <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                            Select a Time
-                                        </h3>
+                                        <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Select a Time</h3>
                                         <div className="grid grid-cols-3 gap-2">
                                             {timeSlots.map((time) => (
                                                 <button
                                                     key={time}
                                                     type="button"
                                                     onClick={() => setFormData(prev => ({ ...prev, time }))}
-                                                    className={`py-2 px-4 text-center rounded-md border transition-colors ${formData.time === time
-                                                            ? 'bg-beauty-rose text-white border-beauty-rose'
-                                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                                        }`}
+                                                    className={`py-2 px-4 text-center rounded-md border transition-colors ${formData.time === time ? 'bg-beauty-rose text-white border-beauty-rose' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
                                                 >
                                                     {time}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
-
                                     <div>
-                                        <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                            Choose a Specialist
-                                        </h3>
+                                        <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Choose a Specialist</h3>
                                         <select
                                             name="specialist"
                                             value={formData.specialist}
@@ -496,17 +424,12 @@ const BookTreatment = () => {
                                         >
                                             <option value="">Select a specialist</option>
                                             {specialists.map((specialist) => (
-                                                <option key={specialist.id} value={specialist.id}>
-                                                    {specialist.name}
-                                                </option>
+                                                <option key={specialist.id} value={specialist.id}>{specialist.name}</option>
                                             ))}
                                         </select>
                                     </div>
-
                                     <div className="mt-6">
-                                        <label htmlFor="notes" className="block text-sm text-gray-600 mb-1">
-                                            Additional Notes (Optional)
-                                        </label>
+                                        <label htmlFor="notes" className="block text-sm text-gray-600 mb-1">Additional Notes (Optional)</label>
                                         <textarea
                                             id="notes"
                                             name="notes"
@@ -519,49 +442,24 @@ const BookTreatment = () => {
                                     </div>
                                 </div>
                             </div>
-
                             <div className="mt-8 flex justify-between">
-                                <Button
-                                    onClick={handlePreviousStep}
-                                    variant="outline"
-                                    className="bg-rose-400 hover:bg-rose-300 px-4 text-white"
-                                >
-                                    Back
-                                </Button>
-                                <Button
-                                    onClick={handleNextStep}
-                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
-                                >
-                                    Next: Payment
-                                </Button>
+                                <Button onClick={handlePreviousStep} variant="outline" className="bg-rose-400 hover:bg-rose-300 px-4 text-white">Back</Button>
+                                <Button onClick={handleNextStep} className="bg-rose-400 hover:bg-rose-300 px-3 py-3">Next: Payment</Button>
                             </div>
                         </div>
                     )}
-
                     {currentStep === 'payment' && (
                         <div className="bg-white rounded-lg shadow-lg p-8">
-                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">
-                                Payment Information
-                            </h2>
-
+                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-6">Payment Information</h2>
                             <div className="mb-8">
-                                <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                    Choose Payment Method
-                                </h3>
-
+                                <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Choose Payment Method</h3>
                                 <div className="space-y-4">
                                     <div
-                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'credit'
-                                                ? 'border-beauty-rose bg-beauty-rose/5'
-                                                : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
+                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'credit' ? 'border-beauty-rose bg-beauty-rose/5' : 'border-gray-200 hover:bg-gray-50'}`}
                                         onClick={() => handlePaymentMethodSelect('credit')}
                                     >
-                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'credit' ? 'border-beauty-rose' : 'border-gray-300'
-                                            }`}>
-                                            {formData.paymentMethod === 'credit' && (
-                                                <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>
-                                            )}
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'credit' ? 'border-beauty-rose' : 'border-gray-300'}`}>
+                                            {formData.paymentMethod === 'credit' && <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>}
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <h4 className="font-medium text-beauty-charcoal">Credit / Debit Card</h4>
@@ -573,19 +471,12 @@ const BookTreatment = () => {
                                             <div className="w-10 h-6 bg-gray-200 rounded"></div>
                                         </div>
                                     </div>
-
                                     <div
-                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'paypal'
-                                                ? 'border-beauty-rose bg-beauty-rose/5'
-                                                : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
+                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'paypal' ? 'border-beauty-rose bg-beauty-rose/5' : 'border-gray-200 hover:bg-gray-50'}`}
                                         onClick={() => handlePaymentMethodSelect('paypal')}
                                     >
-                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'paypal' ? 'border-beauty-rose' : 'border-gray-300'
-                                            }`}>
-                                            {formData.paymentMethod === 'paypal' && (
-                                                <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>
-                                            )}
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'paypal' ? 'border-beauty-rose' : 'border-gray-300'}`}>
+                                            {formData.paymentMethod === 'paypal' && <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>}
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <h4 className="font-medium text-beauty-charcoal">PayPal</h4>
@@ -593,19 +484,12 @@ const BookTreatment = () => {
                                         </div>
                                         <div className="w-16 h-6 bg-gray-200 rounded"></div>
                                     </div>
-
                                     <div
-                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'cash'
-                                                ? 'border-beauty-rose bg-beauty-rose/5'
-                                                : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
+                                        className={`border rounded-lg p-4 flex items-center cursor-pointer transition-colors ${formData.paymentMethod === 'cash' ? 'border-beauty-rose bg-beauty-rose/5' : 'border-gray-200 hover:bg-gray-50'}`}
                                         onClick={() => handlePaymentMethodSelect('cash')}
                                     >
-                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'cash' ? 'border-beauty-rose' : 'border-gray-300'
-                                            }`}>
-                                            {formData.paymentMethod === 'cash' && (
-                                                <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>
-                                            )}
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.paymentMethod === 'cash' ? 'border-beauty-rose' : 'border-gray-300'}`}>
+                                            {formData.paymentMethod === 'cash' && <div className="w-3 h-3 rounded-full bg-beauty-rose"></div>}
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <h4 className="font-medium text-beauty-charcoal">Pay at Salon</h4>
@@ -614,68 +498,33 @@ const BookTreatment = () => {
                                     </div>
                                 </div>
                             </div>
-
                             {formData.paymentMethod === 'credit' && (
                                 <div className="mb-8 border-t border-gray-200 pt-6">
-                                    <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                        Card Details
-                                    </h3>
-
+                                    <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Card Details</h3>
                                     <div className="space-y-4">
                                         <div>
-                                            <label htmlFor="cardName" className="block text-sm text-gray-600 mb-1">
-                                                Name on Card
-                                            </label>
-                                            <Input
-                                                id="cardName"
-                                                name="cardName"
-                                                placeholder="Full name as displayed on card"
-                                            />
+                                            <label htmlFor="cardName" className="block text-sm text-gray-600 mb-1">Name on Card</label>
+                                            <Input id="cardName" name="cardName" placeholder="Full name as displayed on card" />
                                         </div>
-
                                         <div>
-                                            <label htmlFor="cardNumber" className="block text-sm text-gray-600 mb-1">
-                                                Card Number
-                                            </label>
-                                            <Input
-                                                id="cardNumber"
-                                                name="cardNumber"
-                                                placeholder="XXXX XXXX XXXX XXXX"
-                                            />
+                                            <label htmlFor="cardNumber" className="block text-sm text-gray-600 mb-1">Card Number</label>
+                                            <Input id="cardNumber" name="cardNumber" placeholder="XXXX XXXX XXXX XXXX" />
                                         </div>
-
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="expDate" className="block text-sm text-gray-600 mb-1">
-                                                    Expiration Date
-                                                </label>
-                                                <Input
-                                                    id="expDate"
-                                                    name="expDate"
-                                                    placeholder="MM/YY"
-                                                />
+                                                <label htmlFor="expDate" className="block text-sm text-gray-600 mb-1">Expiration Date</label>
+                                                <Input id="expDate" name="expDate" placeholder="MM/YY" />
                                             </div>
-
                                             <div>
-                                                <label htmlFor="cvv" className="block text-sm text-gray-600 mb-1">
-                                                    CVV
-                                                </label>
-                                                <Input
-                                                    id="cvv"
-                                                    name="cvv"
-                                                    placeholder="123"
-                                                />
+                                                <label htmlFor="cvv" className="block text-sm text-gray-600 mb-1">CVV</label>
+                                                <Input id="cvv" name="cvv" placeholder="123" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
-
                             <div className="mb-8">
-                                <h3 className="text-xl font-medium text-beauty-charcoal mb-4">
-                                    Booking Summary
-                                </h3>
-
+                                <h3 className="text-xl font-medium text-beauty-charcoal mb-4">Booking Summary</h3>
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <div className="space-y-2">
                                         <div className="flex justify-between">
@@ -693,7 +542,6 @@ const BookTreatment = () => {
                                     </div>
                                 </div>
                             </div>
-
                             <div className="mb-6">
                                 <label className="flex items-start cursor-pointer">
                                     <input
@@ -709,25 +557,12 @@ const BookTreatment = () => {
                                     </span>
                                 </label>
                             </div>
-
                             <div className="mt-8 flex justify-between">
-                                <Button
-                                    onClick={handlePreviousStep}
-                                    variant="outline"
-                                    className="border-beauty-rose bg-rose-200 text-black px-4 py-1"
-                                >
-                                    Back
-                                </Button>
-                                <Button
-                                    onClick={handleNextStep}
-                                    className="bg-rose-400 hover:bg-rose-300 px-3 py-3"
-                                >
-                                    Complete Booking
-                                </Button>
+                                <Button onClick={handlePreviousStep} variant="outline" className="border-beauty-rose bg-rose-200 text-black px-4 py-1">Back</Button>
+                                <Button onClick={handleNextStep} className="bg-rose-400 hover:bg-rose-300 px-3 py-3">Complete Booking</Button>
                             </div>
                         </div>
                     )}
-
                     {currentStep === 'confirmation' && (
                         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
                             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -735,35 +570,26 @@ const BookTreatment = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-
-                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-4">
-                                Booking Confirmed!
-                            </h2>
-
+                            <h2 className="text-3xl font-medium text-beauty-charcoal mb-4">Booking Confirmed!</h2>
                             <p className="text-gray-600 mb-6 max-w-lg mx-auto">
-                                Your {treatmentData.name} appointment has been successfully booked.
-                                We look forward to seeing you soon!
+                                Your {treatmentData.name} appointment has been successfully booked. We look forward to seeing you soon!
                             </p>
-
                             <div className="bg-beauty-cream/10 p-6 rounded-lg mb-8 max-w-lg mx-auto">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                                     <div>
                                         <h3 className="font-lato text-sm text-gray-500">Treatment</h3>
                                         <p className="font-lato text-beauty-charcoal">{treatmentData.name}</p>
                                     </div>
-
                                     <div>
                                         <h3 className="font-lato text-sm text-gray-500">Date & Time</h3>
                                         <p className="font-lato text-beauty-charcoal">
                                             {formData.date?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {formData.time}
                                         </p>
                                     </div>
-
                                     <div>
                                         <h3 className="font-lato text-sm text-gray-500">Duration</h3>
                                         <p className="font-lato text-beauty-charcoal">{treatmentData.duration}</p>
                                     </div>
-
                                     <div>
                                         <h3 className="font-lato text-sm text-gray-500">Specialist</h3>
                                         <p className="font-lato text-beauty-charcoal">
@@ -772,14 +598,10 @@ const BookTreatment = () => {
                                     </div>
                                 </div>
                             </div>
-
                             <div className="mb-8">
-                                <p className="text-sm text-gray-600 mb-2">
-                                    We've sent a confirmation email to:
-                                </p>
+                                <p className="text-sm text-gray-600 mb-2">We've sent a confirmation email to:</p>
                                 <p className="font-medium text-beauty-charcoal">{formData.email}</p>
                             </div>
-
                             <div className="flex flex-col sm:flex-row justify-center gap-4">
                                 <Button
                                     onClick={handleReturnToServices}
@@ -789,10 +611,10 @@ const BookTreatment = () => {
                                     Browse More Services
                                 </Button>
                                 <Button
-                                    onClick={() => navigate('/')}
+                                    onClick={() => navigate('/customer-dashboard')}
                                     className="bg-beauty-rose hover:bg-beauty-rose/90"
                                 >
-                                    Return to Home
+                                    Go to Dashboard
                                 </Button>
                             </div>
                         </div>
